@@ -122,6 +122,11 @@ RealtimeMesh::FRealtimeMeshEndOfFrameUpdateManager::~FRealtimeMeshEndOfFrameUpda
 		FWorldDelegates::OnWorldPostActorTick.Remove(EndOfFrameUpdateHandle);
 		EndOfFrameUpdateHandle.Reset();
 	}
+	if(PostWorldInitializationHandle.IsValid())
+	{
+		FWorldDelegates::OnPostWorldInitialization.Remove(PostWorldInitializationHandle);
+		PostWorldInitializationHandle.Reset();
+	}
 }
 
 void RealtimeMesh::FRealtimeMeshEndOfFrameUpdateManager::MarkComponentForUpdate(const RealtimeMesh::FRealtimeMeshWeakPtr& InMesh)
@@ -133,6 +138,11 @@ void RealtimeMesh::FRealtimeMeshEndOfFrameUpdateManager::MarkComponentForUpdate(
 		// TODO: Moved this to post actor tick from OnWorldPreSendAlLEndOfFrameUpdates... Is this the best option?
 		// Servers were not getting events but ever ~60 seconds
 		EndOfFrameUpdateHandle = FWorldDelegates::OnWorldPostActorTick.AddLambda([this](UWorld* World, ELevelTick TickType, float DeltaSeconds) { OnPreSendAllEndOfFrameUpdates(World); });
+	}
+	if(!PostWorldInitializationHandle.IsValid())
+	{
+		//Customized to Mark component for update so that collisions are ready before BeginPlay()
+		PostWorldInitializationHandle = FWorldDelegates::OnPostWorldInitialization.AddLambda([this](UWorld* World, const UWorld::InitializationValues IVS) { OnPreSendAllEndOfFrameUpdates(World); });
 	}
 	MeshesToUpdate.Add(InMesh);
 }

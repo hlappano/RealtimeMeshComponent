@@ -62,6 +62,7 @@ namespace RealtimeMesh
 		FCriticalSection SyncRoot;
 		TSet<FRealtimeMeshWeakPtr> MeshesToUpdate;
 		FDelegateHandle EndOfFrameUpdateHandle;
+		FDelegateHandle PostWorldInitializationHandle;
 
 		void OnPreSendAllEndOfFrameUpdates(UWorld* World);
 
